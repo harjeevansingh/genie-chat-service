@@ -5,7 +5,8 @@ package com.chatservice.constants.enums.exceptionCodes;
  */
 
 public enum RootExceptionCodes implements ExceptionCodes {
-    TASK_NOT_FOUND("BE_501", "Task not found!"),
+    INTERNAL_SERVER_ERROR("BE_500", "Internal server error!"),
+    CONVERSATION_NOT_FOUND("BE_501", "Conversation not found!"),
     ;
 
     private final String code;
