@@ -56,33 +56,41 @@ public class ChatService {
     }
 
     public void storeMessage(MessageDTO message) {
-        // Store in Redis
-        String key = RECENT_MESSAGES_KEY_PREFIX + message.getConversationId();
         try {
-            String messageJson = objectMapper.writeValueAsString(message);
-            redisTemplate.opsForList().leftPush(key, messageJson);
-            redisTemplate.opsForList().trim(key, 0, 99); // Keep only last 100 messages
-            redisTemplate.expire(key, RECENT_MESSAGES_TTL, TimeUnit.SECONDS);
+            // Store in Redis
+            String key = RECENT_MESSAGES_KEY_PREFIX + message.getConversationId();
+            try {
+                String messageJson = objectMapper.writeValueAsString(message);
+                redisTemplate.opsForList().leftPush(key, messageJson);
+                redisTemplate.opsForList().trim(key, 0, 99); // Keep only last 100 messages
+                redisTemplate.expire(key, RECENT_MESSAGES_TTL, TimeUnit.SECONDS);
+            } catch (Exception e) {
+                log.error("Error storing message in Redis. Message - {}", message, e);
+                throw new RootException(RootExceptionCodes.INTERNAL_SERVER_ERROR);
+            }
+
+            // Send to Kafka
+            try {
+                String messageJson = objectMapper.writeValueAsString(message);
+                kafkaTemplate.send(CHAT_TOPIC, messageJson);
+            } catch (Exception e) {
+                // Log the error and possibly throw a custom exception
+                log.error("Error sending message to Kafka. Message - {}", message, e);
+                throw new RootException(RootExceptionCodes.INTERNAL_SERVER_ERROR);
+            }
+
+            // Update conversation's updated_at timestamp
+            Conversation conversation = conversationDAO.findById(message.getConversationId())
+                    .orElseThrow(() -> new RootException(RootExceptionCodes.CONVERSATION_NOT_FOUND));
+            conversation.setUpdatedAt(message.getTimestamp());
+            conversationDAO.save(conversation);
+        } catch (RootException e) {
+            log.error("Error storing message. Message - {}", message, e);
+            throw e;
         } catch (Exception e) {
-            log.error("Error storing message in Redis. Message - {}", message, e);
+            log.error("Error storing message. Message - {}", message, e);
             throw new RootException(RootExceptionCodes.INTERNAL_SERVER_ERROR);
         }
-
-        // Send to Kafka
-        try {
-            String messageJson = objectMapper.writeValueAsString(message);
-            kafkaTemplate.send(CHAT_TOPIC, messageJson);
-        } catch (Exception e) {
-            // Log the error and possibly throw a custom exception
-            log.error("Error sending message to Kafka. Message - {}", message, e);
-            throw new RootException(RootExceptionCodes.INTERNAL_SERVER_ERROR);
-        }
-
-        // Update conversation's updated_at timestamp
-        Conversation conversation = conversationDAO.findById(message.getConversationId())
-                .orElseThrow(() -> new RootException(RootExceptionCodes.CONVERSATION_NOT_FOUND));
-        conversation.setUpdatedAt(message.getTimestamp());
-        conversationDAO.save(conversation);
     }
 
     public List<MessageDTO> getRecentMessages(Long conversationId) {

@@ -21,6 +21,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/chat")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class ChatController {
 
     @Autowired
@@ -52,8 +53,9 @@ public class ChatController {
     }
 
     @MessageMapping("/chat")
-    public void processMessage(@Payload MessageDTO messageDTO) {
+    public void processMessage(@Payload MessageDTO messageDTO) throws InterruptedException {
         chatService.storeMessage(messageDTO);
+        Thread.sleep(2000);
         messagingTemplate.convertAndSend("/topic/messages/" + messageDTO.getConversationId(), messageDTO);
     }
 }
