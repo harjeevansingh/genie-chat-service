@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,9 +26,6 @@ public class ChatController {
     @Autowired
     private ChatService chatService;
 
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
-
     @PostMapping("/conversations")
     public ResponseEntity<ConversationResponseDTO> createConversation(@RequestBody ConversationRequestDTO conversationRequestDTO) {
         Conversation conversation = chatService.createConversation(conversationRequestDTO.getUserId(), conversationRequestDTO.getTitle());
@@ -38,7 +34,7 @@ public class ChatController {
 
     @GetMapping("/conversations/{userId}")
     public ResponseEntity<List<ConversationResponseDTO>> getUserConversations(@PathVariable Long userId
-        , @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
+            , @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size) {
         List<Conversation> conversations = chatService.getUserConversations(userId, page, size);
         List<ConversationResponseDTO> conversationResponseDTOS = conversations.stream()
                 .map(ConversationResponseDTO::fromConversation)
@@ -53,9 +49,7 @@ public class ChatController {
     }
 
     @MessageMapping("/chat")
-    public void processMessage(@Payload MessageDTO messageDTO) throws InterruptedException {
-        chatService.storeMessage(messageDTO);
-        Thread.sleep(2000);
-        messagingTemplate.convertAndSend("/topic/messages/" + messageDTO.getConversationId(), messageDTO);
+    public void processMessage(@Payload MessageDTO messageDTO) {
+        chatService.handleUserMessages(messageDTO);
     }
 }
