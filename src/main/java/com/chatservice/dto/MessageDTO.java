@@ -13,7 +13,7 @@ public class MessageDTO {
     private Long conversationId;
     private SenderType senderType;
     private String content;
-    private LocalDateTime timestamp;
+    private LocalDateTime timestamp = LocalDateTime.now();
 
     public enum SenderType {
         USER, AI
