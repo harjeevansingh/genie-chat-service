@@ -5,6 +5,8 @@ import com.chatservice.dto.ConversationResponseDTO;
 import com.chatservice.dto.MessageDTO;
 import com.chatservice.entities.Conversation;
 import com.chatservice.services.ChatService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -23,6 +25,7 @@ import java.util.List;
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class ChatController {
 
+    private static final Logger log = LoggerFactory.getLogger(ChatController.class);
     @Autowired
     private ChatService chatService;
 
@@ -50,6 +53,7 @@ public class ChatController {
 
     @MessageMapping("/chat")
     public void processMessage(@Payload MessageDTO messageDTO) {
+        log.info("Received message: {}", messageDTO);
         chatService.handleUserMessages(messageDTO);
     }
 }

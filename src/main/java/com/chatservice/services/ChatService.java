@@ -83,6 +83,7 @@ public class ChatService {
 
     public void updateMessagesHistory(MessageDTO message, String messageJson) {
         // Push to history service
+        log.info("Sending message to history service. Message - {}, messageJson: {}", message, messageJson);
         kafkaTemplate.send(HISTORY_MESSAGES_TOPIC, messageJson);
 
         // Update conversation's updated_at timestamp (Find more efficient way to do this)
