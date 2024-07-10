@@ -1,0 +1,5 @@
+**/target/
+!target/chat-service.jar
+.gitignore
+.git
+README.md
