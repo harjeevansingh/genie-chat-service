@@ -1,88 +1,28 @@
-Genie Chat Bot - Deployment guide
+# Genie Chat Bot - Chat Service
 
+## Project Description
+Genie Chat Bot is an AI-powered chatbot system providing instant lending-related query resolution. It supports multiple concurrent user sessions with real-time responses and comprehensive conversation history storage. The system is built using a microservices architecture for scalability and efficient query resolution.
 
-This guide explains how to deploy the Chat, History, and Language Model services using Docker Compose.
+## Chat Service Description
+The Chat Service is the core component of the Genie Chat Bot system. It handles real-time communication with users, manages chat sessions, and coordinates with other services for message processing and storage. This service also sets up shared resources like MySQL, Redis, and Kafka, which are used by other services.
 
-1. Prerequisites:
-   1.1. Docker and Docker Compose installed on your system
-   1.2. Ports 3306 (MySQL), 27017 (MongoDB), 6379 (Redis), 9092 (Kafka) should be available on your host machine
-   1.3. OpenAI API key (Requires paid account at OpenAi)
+## Dependencies
+Before running the Chat Service, ensure the following repositories are cloned:
+- History Service: https://github.com/harjeevansingh/genie-history-service
+- Language Model Service: https://github.com/harjeevansingh/genie-language-model-service
+- UI Service: https://github.com/harjeevansingh/genie-ui-service
 
-2. Important Notes:
-   2.1. These services will create containers for -
-  	- MySQL (port 3306)
-        	- Redis (port 6379)
-  	- Kafka (port 9092)
-     	- Zookeeper (port 2181)
-- Chat Service (port 8080)
-- History Service (port 8081)
- 	- Language Model Service (port 8082)
+## Prerequisites
+- Docker and Docker Compose installed on your system
+- Ports 3306 (MySQL), 6379 (Redis), 9092 (Kafka), and 2181 (Zookeeper) should be available
 
-Note - Ensure these ports are not in use by existing installations on your host machine.
+## Steps to Run
+1. Navigate to the Chat Service directory:
+    cd /path/to/genie-chat-service
+2. Start the service:
+    docker-compose up
+3. Verify that the service and its dependencies are running:
+    docker ps
 
-   2.2. Language Model Service uses a .env file for sensitive information. Ensure you have created these files with the necessary information before starting the services.
-
-3. Deployment Sequence:
-
-   3.1. Chat Service
-        The Chat Service should be started first as it sets up shared resources like MySQL, Redis, and Kafka.
-
-        3.1.1. Navigate to the Chat Service directory:
-               cd /path/to/chat-service
-
-        3.1.2. Start the service:
-               docker-compose up -d
-
-        3.1.3. This will create containers for:
-               - MySQL (port 3306)
-               - Redis (port 6379)
-               - Kafka (port 9092)
-               - Zookeeper (port 2181)
-               - Chat Service (port 8080)
-
-   3.2. History Service
-        The History Service should be started after the Chat Service is up and running.
-
-        3.2.1. Navigate to the History Service directory:
-               cd /path/to/history-service
-
-        3.2.2. Start the service:
-               docker-compose up -d
-
-        3.2.3. This will create containers for:
-               - MongoDB (port 27017)
-               - History Service (port 8081)
-
-   3.3. Language Model Service
-        The Language Model Service should be started last.
-
-        3.3.1. Navigate to the Language Model Service directory:
-               cd /path/to/language-model-service
-
-        3.3.2. Create a .env file with the following content:
-               OPENAI_API_KEY=your_openai_api_key_here
-               Replace your_openai_api_key_here with your actual OpenAI API key.
-
-        3.3.3. Start the service:
-               docker-compose up -d
-
-        3.3.4. This will create a container for:
-               - Language Model Service (port 8082)
-
-4. Verification:
-   4.1. To verify that all services are running:
-        docker ps
-   4.2. You should see containers for all services and their dependencies.
-
-5. Stopping the Services:
-   5.1. To stop all services, run the following commands in each service directory:
-        docker-compose down
-   5.2. To stop all services and remove all data (including database data), use:
-        docker-compose down -v
-
-6. Troubleshooting:
-   6.1. If services fail to start, check the logs using docker-compose logs [service_name].
-   6.2. Ensure all required ports are available on your host machine.
-   6.3. Verify that the .env files contain the correct information for Language Model service.
-
-
+For full deployment of the Genie Chat Bot system, refer to the main deployment guide.
+    - https://docs.google.com/document/d/1UWd703j5do7ilt7zrmmJodJIY9KydrCAX3lkqXyKH2w/edit?usp=sharing
